@@ -1,0 +1,8 @@
+streamlit
+streamlit_drawable_canvas
+numpy
+pandas
+Image
+plotly
+scikit-image
+scikit-learn
