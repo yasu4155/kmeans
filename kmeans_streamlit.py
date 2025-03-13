@@ -37,8 +37,13 @@ def main():
         dset = rgb.reshape((-1, 3)) if sel=='RGB' else hex2lab(rgb).reshape((-1, 3))
 
     cls = KMeans(n_clusters=N_CLUSTERS, max_iter=MAX_iter)
-    idx = cls.fit_predict(dset)
-    cog = cls.cluster_centers_
+    try:
+        idx = cls.fit_predict(dset)
+        cog = cls.cluster_centers_
+    except (ValueError):
+        st.write('Region failure')
+        return
+
     ratio = color_ratio(dset, idx, cog, N_CLUSTERS, sel)
     plot_graph(dset, idx, cog, N_CLUSTERS, sel)
     plot_color(ratio, N_CLUSTERS)     
@@ -51,7 +56,7 @@ def img_cut(img, mode):
         mask = Image.new("1", img.size, 1)
         draw = ImageDraw.Draw(mask)
         (cx, cy) = (int(img.width/2), int(img.height/2))
-        cr = int(img.height/2)-1 if img.width > img.height else int(img.height/2)-1
+        cr = cy - 1 if cx > cy else cx - 1
         draw.ellipse((cx-cr, cy-cr, cx+cr, cy+cr), fill=0)
         img_o = Image.composite(img2, img, mask)
     else:
@@ -119,14 +124,16 @@ def get_region(img, sk_color, mode):
         img2 = img.crop((cx-cr, cy-cr, cx+cr, cy+cr))
 
     img2.save('./img_region.png')
-    # st.sidebar.download_button(
-    #     label = 'Download image',
-    #     data = img2,
-    #     file_name ='./img_region.png',
-    #     mime = 'image/png'
-    # )
-    st.session_state.idx += 1
+    with open('./img_region.png', 'rb') as file:
+        img3 = file.read()
     
+    st.sidebar.download_button(
+        label = 'Download region image',
+        data = img3,
+        file_name ='img_region.png',
+        mime = 'image/png'
+    )
+    st.session_state.idx += 1
     return img2, cr
 
 def color_ratio(dset, idx, cog, n, sel):
@@ -167,6 +174,12 @@ def plot_graph(dset, idx, cog, n, sel):
     fig.update_layout(title='3D Color Chart', width=500, height=500)
     fig.update_traces(marker_size=1)
     st.plotly_chart(fig, use_container_width=True)
+    # st.sidebar.download_button(
+    #     label = 'Download 3D color chart',
+    #     data = fig,
+    #     file_name ='color_chart.png',
+    #     mime = 'image/png'
+    # )
     return
 
 def plot_color(ratio, n):
@@ -186,14 +199,18 @@ def plot_color(ratio, n):
         draw.text((230, ypos), f'{hex2rgb(rectcolor)}', fill=textcolor, font=font)
         draw.text((400, ypos), f'{ratio[i][1]:.1f} %',  fill=textcolor, font=font)
 
+    st.subheader('Results')
     st.image(img)
-    img.save('./img_cluster.png')
-    # st.sidebar.download_button(
-    #     label = 'Download results',
-    #     data = img,
-    #     file_name ='./img_cluster.png',
-    #     mime = 'image/png'
-    # )
+    img.save('./color_clusters.png')
+    with open('./color_clusters.png', 'rb') as file:
+        img = file.read()
+
+    st.sidebar.download_button(
+        label = 'Download results',
+        data = img,
+        file_name ='color_clusters.png',
+        mime = 'image/png'
+    )
     return
 
 def hex2rgb(a):
