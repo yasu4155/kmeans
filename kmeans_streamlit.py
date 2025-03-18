@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from skimage import color
 from PIL import Image, ImageDraw, ImageFont
 from streamlit_drawable_canvas import st_canvas
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -93,14 +94,14 @@ def get_region(img, sk_color, mode):
 
     if mode == 'rect':
         (x0, y0, x1, y1) = (xt, yt, xt+xw, yt+yh)
-        print(f'Region {idx}: ({x0}, {y0}) - ({x1}, {y1})')
+        print(f'Region {idx+1}: ({x0}, {y0}) - ({x1}, {y1})')
         img2 = img.crop((x0, y0, x1, y1))
         cr = 0
     else:
         ax = xt + xw/2.0*np.cos(ph*np.pi/180.0)
         ay = yt + yh/2.0*np.sin(ph*np.pi/180.0)
         (cx, cy, cr) = (int(ax), int(ay), int(xw/2.0))
-        print(f'Region {idx}: center ({cx}, {cy}), radius = {cr}')
+        print(f'Region {idx+1}: center ({cx}, {cy}), radius = {cr}')
         img2 = img.crop((cx-cr, cy-cr, cx+cr, cy+cr))
 
     img2.save('./out_region_image.png')
