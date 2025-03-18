@@ -63,7 +63,6 @@ def main():
         file_dload('region_image')
     
     st.session_state.idx += 1
-
     return
 
 def get_region(img, sk_color, mode):
@@ -92,17 +91,17 @@ def get_region(img, sk_color, mode):
         img2 = img.resize((int(img.width/5), int(img.height/5)))
         return img2, 0        
 
-    if mode == 'rect':
-        (x0, y0, x1, y1) = (xt, yt, xt+xw, yt+yh)
-        print(f'Region {idx+1}: ({x0}, {y0}) - ({x1}, {y1})')
-        img2 = img.crop((x0, y0, x1, y1))
-        cr = 0
-    else:
+    if mode == 'circle':
         ax = xt + xw/2.0*np.cos(ph*np.pi/180.0)
         ay = yt + yh/2.0*np.sin(ph*np.pi/180.0)
         (cx, cy, cr) = (int(ax), int(ay), int(xw/2.0))
         print(f'Region {idx+1}: center ({cx}, {cy}), radius = {cr}')
         img2 = img.crop((cx-cr, cy-cr, cx+cr, cy+cr))
+    else:
+        (x0, y0, x1, y1) = (xt, yt, xt+xw, yt+yh)
+        print(f'Region {idx+1}: ({x0}, {y0}) - ({x1}, {y1})')
+        img2 = img.crop((x0, y0, x1, y1))
+        cr = 0
 
     img2.save('./out_region_image.png')
     return img2, cr
@@ -164,7 +163,7 @@ def color_ratio(dset, idx, cog, n, sel):
 def plot_graph(dset, idx, cog, ratio, n, sel, sel2):
     item = ['R', 'G', 'B', 'cluster', 'mark'] if sel=='RGB' else ['L*', 'a*', 'b*', 'cluster', 'mark']
     df1 = pd.DataFrame(dset)
-    df1['3'] = idx if sel2=='gradiation' else [str(i) for i in idx]
+    df1['3'] = idx+1 if sel2=='gradiation' else [str(i+1) for i in idx]
     df1['4'] = [1 for i in dset]
     df1.columns = item
     df2 = pd.DataFrame(cog)
