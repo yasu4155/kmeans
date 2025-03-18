@@ -4,5 +4,6 @@ numpy
 pandas
 Image
 plotly
+kaleido
 scikit-image
 scikit-learn
