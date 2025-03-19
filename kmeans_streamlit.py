@@ -11,8 +11,8 @@ from streamlit_drawable_canvas import st_canvas
 import warnings
 warnings.filterwarnings('ignore')
 
-if 'idx' not in st.session_state:
-    st.session_state.idx = 0
+if 'id' not in st.session_state:
+    st.session_state.id = 0
 
 def main():
     st.title("K-means Clustering")
@@ -27,7 +27,7 @@ def main():
     N_CLUSTERS = st.sidebar.selectbox('Number of clusters:', list(range(2, 11)), index=3)
     mk_color = st.sidebar.radio('3D chart color:', ('gradiation', 'color'))
     sel_mode = st.sidebar.radio('Select:', ('All', 'Region'))
-    print(f'Session state: {st.session_state.idx}')
+    print(f'Session state: {st.session_state.id}')
 
     if sel_mode == 'Region':
         sk_color = st.sidebar.radio('Stroke color:', ('black', 'white'))
@@ -62,7 +62,7 @@ def main():
     if sel_mode == 'Region':
         file_dload('region_image')
     
-    st.session_state.idx += 1
+    st.session_state.id += 1
     return
 
 def get_region(img, sk_color, mode):
@@ -82,24 +82,26 @@ def get_region(img, sk_color, mode):
     try:
         if canvas_result.json_data['objects'] != []:
             p = canvas_result.json_data['objects']
-            idx = len(p)-1 if len(p) > 0 else 0
-            (xt, yt, xw, yh, ph) = (p[idx]['left'], p[idx]['top'], p[idx]['width'], p[idx]['height'], p[idx]['angle'])
+            i = len(p)-1 if len(p) > 0 else 0
+            (xt, yt, xw, yh, ph) = (p[i]['left'], p[i]['top'], p[i]['width'], p[i]['height'], p[i]['angle'])
         else:
             img2 = img.resize((int(img.width/5), int(img.height/5)))
-            return img2, 0
+            cr = int(img.width/2) if img.width <= img.height else int(img.height/2)
+            return img2, cr
     except (TypeError):
         img2 = img.resize((int(img.width/5), int(img.height/5)))
-        return img2, 0        
+        cr = int(img.width/2) if img.width <= img.height else int(img.height/2)
+        return img2, cr       
 
     if mode == 'circle':
         ax = xt + xw/2.0*np.cos(ph*np.pi/180.0)
         ay = yt + yh/2.0*np.sin(ph*np.pi/180.0)
         (cx, cy, cr) = (int(ax), int(ay), int(xw/2.0))
-        print(f'Region {idx+1}: center ({cx}, {cy}), radius = {cr}')
+        print(f'Region {i+1}: center ({cx}, {cy}), radius = {cr}')
         img2 = img.crop((cx-cr, cy-cr, cx+cr, cy+cr))
     else:
         (x0, y0, x1, y1) = (xt, yt, xt+xw, yt+yh)
-        print(f'Region {idx+1}: ({x0}, {y0}) - ({x1}, {y1})')
+        print(f'Region {i+1}: ({x0}, {y0}) - ({x1}, {y1})')
         img2 = img.crop((x0, y0, x1, y1))
         cr = 0
 
