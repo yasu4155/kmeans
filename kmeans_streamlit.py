@@ -104,8 +104,6 @@ def get_region(img, sk_color, mode):
         print(f'Region {i+1}: ({x0}, {y0}) - ({x1}, {y1})')
         img2 = img.crop((x0, y0, x1, y1))
         cr = 0
-
-    img2.save('./out_region_image.png')
     return img2, cr
 
 def img_cut(img, mode):
@@ -119,6 +117,7 @@ def img_cut(img, mode):
         img_o = Image.composite(img2, img, mask)
     else:
         img_o = img
+    img_o.save('./out_region_image.png')
     return img_o
 
 def dset_cut(dset, rgb, mode, r):
@@ -168,6 +167,7 @@ def plot_graph(dset, idx, cog, ratio, n, sel, sel2):
     df1['3'] = idx+1 if sel2=='gradiation' else [str(i+1) for i in idx]
     df1['4'] = [1 for i in dset]
     df1.columns = item
+    
     df2 = pd.DataFrame(cog)
     df2['3'] = [n+2 for i in range(n)]
     df2['4'] = [5 for i in cog]
