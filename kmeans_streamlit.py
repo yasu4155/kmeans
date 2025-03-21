@@ -25,7 +25,8 @@ def main():
     MAX_iter = 30
     resize = 4096
     N_CLUSTERS = st.sidebar.selectbox('Number of clusters:', list(range(2, 11)), index=3)
-    mk_color = st.sidebar.radio('3D chart color:', ('gradiation', 'color'))
+    mk_color = st.sidebar.radio('3D chart color:', ('gradation', 'color'))
+    sel_mark = st.sidebar.radio('COG marker:', ('off', 'on'))
     sel_mode = st.sidebar.radio('Select:', ('All', 'Region'))
     print(f'Session state: {st.session_state.id}')
 
@@ -52,9 +53,9 @@ def main():
     except (ValueError):
         st.write(':red[Region failure]')
         return
-    
+
     ratio = color_ratio(dset, idx, cog, N_CLUSTERS, sel)
-    plot_graph(dset, idx, cog, ratio, N_CLUSTERS, sel, mk_color)
+    plot_graph(dset, idx, cog, ratio, N_CLUSTERS, sel, mk_color, sel_mark)
     plot_color(ratio, N_CLUSTERS)
 
     file_dload('3D_chart')
@@ -122,7 +123,7 @@ def img_cut(img, mode):
 
 def dset_cut(dset, rgb, mode, r):
     if mode == 'circle':
-        pos = [True for i in range(len(dset))]
+        pos = [True for i in dset]
         col = int(len(dset)/len(rgb))
         for i in range(len(dset)):
             if (i%col - int(col/2))**2 + (int(i/col) - int(col/2))**2 > r**2:
@@ -152,32 +153,41 @@ def color_ratio(dset, idx, cog, n, sel):
 
     ratio = []
     for i in range(n):
-        ratio.append((rgb2hex(cog[i] if sel=='RGB' else lab2rgb(cog[i])), count[i]/ndata*100))
-
+        ratio.append((rgb2hex(cog[i] if sel=='RGB' else lab2rgb(cog[i])), count[i]/ndata*100, i))
     ratio_s = sorted(ratio, key=lambda x:x[1], reverse=True)
+    
     for i in range(n):
         s = f'{hex2rgb(ratio_s[i][0])}' + ' '*10
         print(f'{i+1}:', f'{ratio_s[i][0]}  ', s[0:16], f'{ratio_s[i][1]:.2f}%')
     print()
     return ratio_s
 
-def plot_graph(dset, idx, cog, ratio, n, sel, sel2):
-    item = ['R', 'G', 'B', 'cluster', 'mark'] if sel=='RGB' else ['L*', 'a*', 'b*', 'cluster', 'mark']
+def plot_graph(dset, idx, cog, ratio, n, sel1, sel2, sel3):
+    item = ['R', 'G', 'B', 'cluster', 'mark', 'opacity', 'sort'] \
+        if sel1=='RGB' else ['L*', 'a*', 'b*', 'cluster', 'mark', 'opacity', 'sort']
     df1 = pd.DataFrame(dset)
-    df1['3'] = idx+1 if sel2=='gradiation' else [str(i+1) for i in idx]
-    df1['4'] = [1 for i in dset]
+    df1['3'] = idx+1 if sel2=='gradation' else [str(i+1) for i in idx]
+    df1['4'] = [0.1 for i in dset]
+    df1['5'] = [0.5 for i in dset]
+    df1['6'] = [0.5 for i in dset]
     df1.columns = item
-    
-    df2 = pd.DataFrame(cog)
-    df2['3'] = [n+2 for i in range(n)]
-    df2['4'] = [5 for i in cog]
-    colors = [c for c, i in ratio]
 
-    fig = px.scatter_3d(df1, x='R', y='G', z='B', color='cluster', color_discrete_sequence=colors, size='mark') \
-        if sel=='RGB' else px.scatter_3d(df1, x='a*', y='b*', z='L*', color='cluster', color_discrete_sequence=colors, size='mark')
+    df2 = pd.DataFrame(cog.astype(int))
+    df2['3'] = [i+1 for i in range(n)]  if sel2=='gradation' else [str(i+1) for i in range(n)]
+    df2['4'] = [1 for i in cog]
+    df2['5'] = [1.0 for i in cog]
+    df2['6'] = [1.0 for i in cog]
+    df2.columns = item
+    df = pd.concat([df1, df2])
+    df.sort_values('sort', ascending=True)
+    colors = [ratio[i][0] for i in range(n)]
+
+    fig = px.scatter_3d(df, x='R', y='G', z='B', color='cluster', color_discrete_sequence=colors, size='mark', opacity=1.0) \
+        if sel1=='RGB' else px.scatter_3d(df, x='a*', y='b*', z='L*', color='cluster', color_discrete_sequence=colors, size='mark', opacity=1.0)
 
     fig.update_layout(title='3D Chart', width=500, height=500)
-    fig.update_traces(marker_size=1)
+    if sel3 == 'off':
+        fig.update_traces(marker_size=1)
     st.plotly_chart(fig, use_container_width=True)
     pio.write_image(fig, './out_3D_chart.png', format='png')
     return
@@ -194,7 +204,7 @@ def plot_color(ratio, n):
         rectcolor = ratio[i][0]
         ypos = i*75 + 75
         draw.rectangle([(50, ypos-15), (100, ypos+35)], outline=rectcolor, fill=rectcolor, width=0)
-        draw.text(( 25, ypos), f'{i+1}',                fill=textcolor, font=font)
+        draw.text((  0, ypos), f'{i+1}',                fill=textcolor, font=font)
         draw.text((125, ypos), f'{rectcolor}',          fill=textcolor, font=font)
         draw.text((230, ypos), f'{hex2rgb(rectcolor)}', fill=textcolor, font=font)
         draw.text((400, ypos), f'{ratio[i][1]:.1f} %',  fill=textcolor, font=font)
