@@ -54,8 +54,8 @@ def main():
         st.write(':red[Region failure]')
         return
 
-    ratio, idx2 = color_ratio(dset, idx, cog, N_CLUSTERS, sel)
-    plot_graph(dset, idx, idx2, cog, ratio, N_CLUSTERS, sel, mk_color, sel_mark)
+    ratio, idx2, rvs = color_ratio(dset, idx, cog, N_CLUSTERS, sel)
+    plot_graph(dset, idx, idx2, cog, ratio, rvs, N_CLUSTERS, sel, mk_color, sel_mark)
     plot_color(ratio, N_CLUSTERS)
 
     file_dload('3D_chart')
@@ -165,9 +165,9 @@ def color_ratio(dset, idx, cog, n, sel):
         s = f'{hex2rgb(ratio_s[i][0])}' + ' '*10
         print(f'{i+1}:', f'{ratio_s[i][0]}  ', s[0:16], f'{ratio_s[i][1]:.2f}%')
     print()
-    return ratio_s, idx2
+    return ratio_s, idx2, rvs
 
-def plot_graph(dset, idx, idx2, cog, ro, n, sel1, sel2, sel3):
+def plot_graph(dset, idx, idx2, cog, ro, rv, n, sel1, sel2, sel3):
     item = ['R', 'G', 'B', 'cluster', 'Cluster', 'mark', 'opacity'] if sel1=='RGB' \
         else ['L*', 'a*', 'b*', 'cluster', 'Cluster', 'mark', 'opacity']
 
@@ -180,7 +180,7 @@ def plot_graph(dset, idx, idx2, cog, ro, n, sel1, sel2, sel3):
 
     df2 = pd.DataFrame(cog.astype(int))
     df2['3'] = [i+1 for i in range(n)]  if sel2=='gradation' else [str(i+1) for i in range(n)]
-    df2['4'] = [ro[i][2]+1 for i in range(n)]  if sel2=='gradation' else [str(ro[i][2]+1) for i in range(n)]
+    df2['4'] = [rv[i]+1 for i in range(n)]  if sel2=='gradation' else [str(rv[i]+1) for i in range(n)]
     df2['5'] = [1 for i in cog]
     df2['6'] = [1.0 for i in cog]
     df2.columns = item
