@@ -213,7 +213,7 @@ def plot_color(ratio, n):
         rectcolor = ratio[i][0]
         ypos = i*75 + 75
         draw.rectangle([(50, ypos-15), (100, ypos+35)], outline=rectcolor, fill=rectcolor, width=0)
-        draw.text((  0, ypos), f'{i+1}',                fill=textcolor, font=font)
+        draw.text(( 15, ypos), f'{i+1}',                fill=textcolor, font=font)
         draw.text((125, ypos), f'{rectcolor}',          fill=textcolor, font=font)
         draw.text((230, ypos), f'{hex2rgb(rectcolor)}', fill=textcolor, font=font)
         draw.text((400, ypos), f'{ratio[i][1]:.1f} %',  fill=textcolor, font=font)
