@@ -177,6 +177,7 @@ def plot_graph(dset, idx, idx2, cog, ro, rv, n, sel1, sel2, sel3):
     df1['5'] = [0.1 for i in dset]
     df1['6'] = [0.5 for i in dset]
     df1.columns = item
+    df1.sort_values('Cluster', ascending=True, inplace=True)
 
     df2 = pd.DataFrame(cog.astype(int))
     df2['3'] = [i+1 for i in range(n)]  if sel2=='gradation' else [str(i+1) for i in range(n)]
@@ -185,8 +186,7 @@ def plot_graph(dset, idx, idx2, cog, ro, rv, n, sel1, sel2, sel3):
     df2['6'] = [1.0 for i in cog]
     df2.columns = item
 
-    df = pd.concat([df1, df2])
-    df.sort_values('Cluster', ascending=True, inplace=True)
+    df = pd.concat([df1, df2]).reset_index(drop=True)
     colors = [ro[i][0] for i in range(n)]
     # pd.set_option('display.max_rows', None)
     # print(df)
