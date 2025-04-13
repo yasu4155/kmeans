@@ -18,8 +18,10 @@ def main():
     st.title("K-means Clustering")
     sel = st.sidebar.radio('Color space:', ('RGB', 'LAB'))
     fup = st.sidebar.file_uploader('Upload image file')
-    filename = fup.name if fup else './color_chart.jpg'
-    img = Image.open(filename)
+    if fup is None:
+        st.write('Please upload an image file.')
+        return
+    img = Image.open(fup.name)
     # st.image(img)
 
     MAX_iter = 30
@@ -180,7 +182,7 @@ def plot_graph(dset, idx, idx2, cog, ro, rv, n, sel1, sel2, sel3):
     df1.sort_values('Cluster', ascending=True, inplace=True)
 
     df2 = pd.DataFrame(cog.astype(int))
-    df2['3'] = [i+1 for i in range(n)]  if sel2=='gradation' else [str(i+1) for i in range(n)]
+    df2['3'] = [i+1 for i in range(n)]      if sel2=='gradation' else [str(i+1)     for i in range(n)]
     df2['4'] = [rv[i]+1 for i in range(n)]  if sel2=='gradation' else [str(rv[i]+1) for i in range(n)]
     df2['5'] = [1 for i in cog]
     df2['6'] = [1.0 for i in cog]
